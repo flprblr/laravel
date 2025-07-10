@@ -52,3 +52,9 @@ Route::get('/auth/google', [\App\Http\Controllers\Auth\GoogleController::class, 
 
 Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\GoogleController::class, 'callback'])
     ->name('auth.google.callback');
+
+Route::get('/auth/apple', [\App\Http\Controllers\Auth\AppleController::class, 'redirect'])
+    ->name('auth.apple');
+
+Route::get('/auth/apple/callback', [\App\Http\Controllers\Auth\AppleController::class, 'callback'])
+    ->name('auth.apple.callback');
