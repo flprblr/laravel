@@ -40,6 +40,14 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'sanctum' => [
+            'driver' => 'sanctum',
+            'provider' => 'sanctum_users',
+        ],
+        'api' => [
+            'driver' => 'passport',
+            'provider' => 'passport_users',
+        ],
     ],
 
     /*
@@ -63,6 +71,14 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
+        ],
+        'sanctum_users' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\UserSanctum::class,
+        ],
+        'passport_users' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\UserPassport::class,
         ],
 
         // 'users' => [
