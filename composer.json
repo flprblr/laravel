@@ -21,6 +21,7 @@
         "league/flysystem-ftp": "^3.0",
         "league/flysystem-sftp-v3": "^3.0",
         "socialiteproviders/apple": "^5.7",
+        "spatie/laravel-permission": "^6.20",
         "tightenco/ziggy": "^2.4",
         "transbank/transbank-sdk": "~5.0"
     },
