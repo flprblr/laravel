@@ -39,12 +39,16 @@ return [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_REDIRECT_URI'),
+        'allowed_domain' => env('GOOGLE_ALLOWED_DOMAIN', null),
     ],
 
     'apple' => [
         'client_id' => env('APPLE_CLIENT_ID'),
-        'client_secret' => env('APPLE_CLIENT_SECRET'),
+        'team_id' => env('APPLE_TEAM_ID'),
+        'key_id' => env('APPLE_KEY_ID'),
+        'private_key_path' => env('APPLE_PRIVATE_KEY_PATH'),
         'redirect' => env('APPLE_REDIRECT_URI'),
+        'scope' => 'name email',
     ],
 
 ];

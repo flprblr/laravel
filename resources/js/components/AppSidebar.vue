@@ -3,29 +3,53 @@ import NavFooter from '@/components/NavFooter.vue';
 import NavMain from '@/components/NavMain.vue';
 import NavUser from '@/components/NavUser.vue';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
+import { usePermissions } from '@/composables/usePermissions';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { Clock, RefreshCcw, UserRound, UserRoundCheck, UserRoundCog } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
+const { can, is } = usePermissions();
+
+// Ejemplo usando el composable usePermissions
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutGrid,
+        title: 'Pedidos Pendientes',
+        href: '/pending-orders',
+        icon: Clock,
+    },
+    {
+        title: 'Actualizar Pedidos SM',
+        href: '/sm/update-orders-status',
+        icon: RefreshCcw,
+    },
+    {
+        title: 'Actualizar Pedidos Superga',
+        href: '/superga/update-orders-status',
+        icon: RefreshCcw,
+    },
+    {
+        title: 'Actualizar Pedidos Kappa',
+        href: '/kappa/update-orders-status',
+        icon: RefreshCcw,
     },
 ];
 
 const footerNavItems: NavItem[] = [
     {
-        title: 'Github Repo',
-        href: 'https://github.com/laravel/vue-starter-kit',
-        icon: Folder,
+        title: 'Users',
+        href: '/maintainers/users',
+        icon: UserRound,
     },
     {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
-        icon: BookOpen,
+        title: 'Roles',
+        href: '/maintainers/roles',
+        icon: UserRoundCog,
+    },
+    {
+        title: 'Permissions',
+        href: '/maintainers/permissions',
+        icon: UserRoundCheck,
     },
 ];
 </script>
@@ -49,7 +73,7 @@ const footerNavItems: NavItem[] = [
         </SidebarContent>
 
         <SidebarFooter>
-            <NavFooter :items="footerNavItems" />
+            <NavFooter :items="footerNavItems" v-role="'Administrator'" />
             <NavUser />
         </SidebarFooter>
     </Sidebar>
