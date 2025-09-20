@@ -5,6 +5,10 @@ import { Separator } from '@/components/ui/separator';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
 
+defineProps<{
+    variant?: 'default' | 'wide';
+}>();
+
 const sidebarNavItems: NavItem[] = [
     {
         title: 'Profile',
@@ -18,6 +22,26 @@ const sidebarNavItems: NavItem[] = [
         title: 'Appearance',
         href: '/settings/appearance',
     },
+    // {
+    //     title: 'Users',
+    //     href: '/maintainers/users',
+    // },
+    // {
+    //     title: 'Roles',
+    //     href: '/maintainers/roles',
+    // },
+    // {
+    //     title: 'Permissions',
+    //     href: '/maintainers/permissions',
+    // },
+    // {
+    //     title: 'API Tokens: Bearer',
+    //     href: '/maintainers/sanctum',
+    // },
+    // {
+    //     title: 'API Tokens: JWT',
+    //     href: '/maintainers/passport',
+    // },
 ];
 
 const page = usePage();
@@ -48,8 +72,8 @@ const currentPath = page.props.ziggy?.location ? new URL(page.props.ziggy.locati
 
             <Separator class="my-6 md:hidden" />
 
-            <div class="flex-1 md:max-w-2xl">
-                <section class="max-w-xl space-y-12">
+            <div :class="['flex-1', variant === 'wide' ? 'w-full' : 'md:max-w-2xl']">
+                <section :class="[variant === 'wide' ? 'w-full' : 'max-w-xl', 'space-y-12']">
                     <slot />
                 </section>
             </div>

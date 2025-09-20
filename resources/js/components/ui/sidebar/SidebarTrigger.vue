@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { PanelLeft } from 'lucide-vue-next'
 import { useSidebar } from './utils'
 
+
 const props = defineProps<{
   class?: HTMLAttributes['class']
 }>()
