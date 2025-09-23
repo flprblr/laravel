@@ -38,7 +38,7 @@ class UsersExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
             $user->name,
             $user->email,
             $user->password,
-            $user->status ? 'Activo' : 'Inactivo',
+            $user->status ? 'Active' : 'Inactive',
             $user->dni,
             $user->phone,
             $user->created_at,

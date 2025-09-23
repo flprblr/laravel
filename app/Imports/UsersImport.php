@@ -64,11 +64,11 @@ class UsersImport implements SkipsEmptyRows, ToCollection, WithHeadingRow, WithV
 
         $str = strtolower(trim((string) $value));
 
-        if (in_array($str, ['1', 'true', 'activo'])) {
+        if (in_array($str, ['1', 'true', 'activo', 'active'])) {
             return true;
         }
 
-        if (in_array($str, ['0', 'false', 'inactivo'])) {
+        if (in_array($str, ['0', 'false', 'inactivo', 'inactive'])) {
             return false;
         }
 

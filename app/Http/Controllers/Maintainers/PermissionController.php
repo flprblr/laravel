@@ -27,7 +27,7 @@ class PermissionController extends Controller
     {
         $allowedSortColumns = ['id', 'name', 'created_at', 'updated_at'];
         $allowedSortDirections = ['asc', 'desc'];
-        $defaultPerPage = 15;
+        $defaultPerPage = 10;
         $maxPerPage = 100;
 
         $sortBy = $request->input('sort_by', 'id');
