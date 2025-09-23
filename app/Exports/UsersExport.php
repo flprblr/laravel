@@ -12,8 +12,7 @@ class UsersExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
 {
     public function collection()
     {
-        return User::with('roles:id,name')
-            ->select('id', 'name', 'email', 'password', 'status', 'dni', 'phone', 'created_at', 'updated_at')
+        return User::select('id', 'name', 'email', 'password', 'status', 'dni', 'phone', 'created_at', 'updated_at')
             ->get();
     }
 
@@ -27,7 +26,6 @@ class UsersExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
             'Status',
             'DNI',
             'Phone',
-            'Roles',
             'Created At',
             'Updated At',
         ];
@@ -40,10 +38,9 @@ class UsersExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
             $user->name,
             $user->email,
             $user->password,
-            $user->status,
+            $user->status ? 'Activo' : 'Inactivo',
             $user->dni,
             $user->phone,
-            $user->roles->pluck('name')->implode(', '),
             $user->created_at,
             $user->updated_at,
         ];

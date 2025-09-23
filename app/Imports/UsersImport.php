@@ -5,7 +5,6 @@ namespace App\Imports;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -16,11 +15,17 @@ class UsersImport implements SkipsEmptyRows, ToCollection, WithHeadingRow, WithV
     public function rules(): array
     {
         return [
-            'id' => 'required|integer|min:1',
+            'id' => 'integer|min:1',
             'name' => 'required|string|min:2|max:255',
             'email' => 'required|email|max:255',
-            'password' => 'nullable|string|min:6',
-            'status' => 'nullable|boolean',
+            'password' => [
+                'nullable',
+                'string',
+                'min:12',
+                'max:128',
+                'regex:/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^\w\s]).{12,128}$/',
+            ],
+            'status' => 'nullable',
             'dni' => 'nullable|string|max:20',
             'phone' => 'nullable|string|max:20',
         ];
@@ -28,29 +33,53 @@ class UsersImport implements SkipsEmptyRows, ToCollection, WithHeadingRow, WithV
 
     public function collection(Collection $rows)
     {
-        DB::beginTransaction();
-
-        try {
+        DB::transaction(function () use ($rows) {
             foreach ($rows as $row) {
-                User::updateOrCreate(
-                    [
-                        'id' => $row['id'],
-                    ],
-                    [
-                        'name' => trim($row['name']),
-                        'email' => strtolower(trim($row['email'])),
-                        'password' => ! empty($row['password']) ? Hash::make($row['password']) : null,
-                        'status' => $row['status'] ?? true,
-                        'dni' => $row['dni'] ?? null,
-                        'phone' => $row['phone'] ?? null,
-                    ]
-                );
-            }
+                $unique = ! empty($row['id'])
+                    ? ['id' => $row['id']]
+                    : ['email' => strtolower(trim($row['email']))];
 
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
+                $data = [
+                    'name' => trim($row['name']),
+                    'email' => strtolower(trim($row['email'])),
+                    'status' => $this->normalizeStatus($row['status'] ?? null),
+                    'dni' => $row['dni'] ?? null,
+                    'phone' => $row['phone'] ?? null,
+                ];
+
+                if (! empty($row['password'])) {
+                    $data['password'] = $row['password'];
+                }
+
+                User::updateOrCreate($unique, $data);
+            }
+        });
+    }
+
+    private function normalizeStatus($value): bool
+    {
+        if ($value === null || $value === '') {
+            return true;
         }
+
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        $str = strtolower(trim((string) $value));
+
+        if (in_array($str, ['1', 'true', 'activo'])) {
+            return true;
+        }
+
+        if (in_array($str, ['0', 'false', 'inactivo'])) {
+            return false;
+        }
+
+        if (is_numeric($value)) {
+            return ((int) $value) === 1;
+        }
+
+        return (bool) $value;
     }
 }

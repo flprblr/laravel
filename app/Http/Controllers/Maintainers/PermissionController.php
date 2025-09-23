@@ -7,8 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Maintainers\Permissions\StorePermissionRequest;
 use App\Http\Requests\Maintainers\Permissions\UpdatePermissionRequest;
 use App\Imports\PermissionsImport;
-use App\Models\User;
-use App\Models\Role;
 use App\Models\Permission;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -17,6 +15,11 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class PermissionController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Permission::class, 'permission');
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -24,25 +27,30 @@ class PermissionController extends Controller
     {
         $allowedSortColumns = ['id', 'name', 'created_at', 'updated_at'];
         $allowedSortDirections = ['asc', 'desc'];
+        $defaultPerPage = 15;
+        $maxPerPage = 100;
 
         $sortBy = $request->input('sort_by', 'id');
-        if (! in_array($sortBy, $allowedSortColumns)) {
-            $sortBy = 'name';
+        if (! in_array($sortBy, $allowedSortColumns, true)) {
+            $sortBy = 'id';
         }
 
-        $sortDirection = $request->input('sort_direction', 'asc');
-        if (! in_array($sortDirection, $allowedSortDirections)) {
+        $sortDirection = strtolower($request->input('sort_direction', 'asc'));
+        if (! in_array($sortDirection, $allowedSortDirections, true)) {
             $sortDirection = 'asc';
         }
 
-        $perPage = $request->input('per_page', 15);
+        $perPage = (int) $request->input('per_page', $defaultPerPage);
+        $perPage = $perPage > 0 ? min($perPage, $maxPerPage) : $defaultPerPage;
 
         $query = Permission::select(['id', 'name', 'created_at', 'updated_at']);
 
-        if ($search = $request->input('search')) {
+        if ($search = trim((string) $request->input('search'))) {
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('id', $search);
+                $q->where('name', 'like', "%{$search}%");
+                if (is_numeric($search)) {
+                    $q->orWhere('id', (int) $search);
+                }
             });
         }
 
@@ -84,7 +92,9 @@ class PermissionController extends Controller
      */
     public function show(Permission $permission)
     {
-        $permission->load('roles');
+        $permission->load(['roles' => function ($query) {
+            $query->select(['id', 'name'])->orderBy('id', 'asc');
+        }]);
 
         return Inertia::render('maintainers/permissions/Show', [
             'permission' => $permission,
@@ -96,7 +106,9 @@ class PermissionController extends Controller
      */
     public function edit(Permission $permission)
     {
-        $permission->load('roles');
+        $permission->load(['roles' => function ($query) {
+            $query->select(['id', 'name'])->orderBy('id', 'asc');
+        }]);
 
         return Inertia::render('maintainers/permissions/Edit', [
             'permission' => $permission,
@@ -132,12 +144,17 @@ class PermissionController extends Controller
      */
     public function export()
     {
-        $app = config('app.name');
-        $time = Carbon::now('America/Santiago')->format('d-m-Y H-i-s');
+        $this->authorize('export', Permission::class);
+        try {
+            $app = config('app.name');
+            $tz = config('app.timezone', 'UTC');
+            $time = Carbon::now($tz)->format('d-m-Y H-i-s');
+            $filename = "{$app} - Permissions {$time}.xlsx";
 
-        $filename = "{$app} - Permissions {$time}.xlsx";
-
-        return Excel::download(new PermissionsExport, $filename);
+            return Excel::download(new PermissionsExport, $filename);
+        } catch (\Throwable $e) {
+            return back()->with('error', 'An error occurred while exporting.');
+        }
     }
 
     /**
@@ -153,6 +170,7 @@ class PermissionController extends Controller
      */
     public function import(Request $request)
     {
+        $this->authorize('import', Permission::class);
         $request->validate([
             'file' => 'required|file|mimes:xlsx|max:2048',
         ]);
@@ -163,7 +181,7 @@ class PermissionController extends Controller
             return redirect()
                 ->route('maintainers.permissions.import.form')
                 ->with('success', 'Permissions imported successfully.');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return back()->with('error', 'Error: '.$e->getMessage());
         }
     }

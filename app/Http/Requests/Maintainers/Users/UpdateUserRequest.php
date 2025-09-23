@@ -11,7 +11,7 @@ class UpdateUserRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,8 +21,21 @@ class UpdateUserRequest extends FormRequest
      */
     public function rules(): array
     {
+        $user = $this->route('user');
+
         return [
-            //
+            'name' => ['required', 'string', 'min:3', 'max:255', 'unique:users,name,'.($user?->id)],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.($user?->id)],
+            'password' => [
+                'sometimes',
+                'nullable',
+                'string',
+                'min:12',
+                'max:128',
+                'regex:/^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[^\\w\\s]).{12,128}$/',
+            ],
+            'roles' => ['array'],
+            'roles.*' => ['exists:roles,id'],
         ];
     }
 }

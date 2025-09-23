@@ -7,17 +7,21 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Maintainers\Users\StoreUserRequest;
 use App\Http\Requests\Maintainers\Users\UpdateUserRequest;
 use App\Imports\UsersImport;
-use App\Models\User;
 use App\Models\Role;
-use App\Models\Permission;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
-use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(User::class, 'user');
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -25,25 +29,31 @@ class UserController extends Controller
     {
         $allowedSortColumns = ['id', 'name', 'email', 'created_at', 'updated_at'];
         $allowedSortDirections = ['asc', 'desc'];
+        $defaultPerPage = 15;
+        $maxPerPage = 100;
 
-        $sortBy = $request->input('sort_by', 'name');
-        if (! in_array($sortBy, $allowedSortColumns)) {
-            $sortBy = 'name';
+        $sortBy = $request->input('sort_by', 'id');
+        if (! in_array($sortBy, $allowedSortColumns, true)) {
+            $sortBy = 'id';
         }
 
-        $sortDirection = $request->input('sort_direction', 'asc');
-        if (! in_array($sortDirection, $allowedSortDirections)) {
+        $sortDirection = strtolower($request->input('sort_direction', 'asc'));
+        if (! in_array($sortDirection, $allowedSortDirections, true)) {
             $sortDirection = 'asc';
         }
 
-        $perPage = $request->input('per_page', 15);
+        $perPage = (int) $request->input('per_page', $defaultPerPage);
+        $perPage = $perPage > 0 ? min($perPage, $maxPerPage) : $defaultPerPage;
 
         $query = User::select(['id', 'name', 'email', 'created_at', 'updated_at']);
 
-        if ($search = $request->input('search')) {
+        if ($search = trim((string) $request->input('search'))) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('id', $search);
+                    ->orWhere('email', 'like', "%{$search}%");
+                if (is_numeric($search)) {
+                    $q->orWhere('id', (int) $search);
+                }
             });
         }
 
@@ -72,23 +82,9 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'min:3', 'max:255', 'unique:users,name'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => [
-                'required',
-                'string',
-                'min:12',
-                'max:128',
-                'regex:/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^\w\s]).{12,128}$/',
-            ],
-            'roles' => ['array'],
-            'roles.*' => ['exists:roles,id'],
-        ], [
-            'password.regex' => 'La contraseña debe tener entre 12 y 128 caracteres, incluir letras, números y símbolos.',
-        ]);
+        $validated = $request->validated();
 
         $user = User::create([
             'name' => $validated['name'],
@@ -102,7 +98,7 @@ class UserController extends Controller
 
         return redirect()
             ->route('maintainers.users.create')
-            ->with('success', 'Usuario creado correctamente.');
+            ->with('success', 'User created successfully.');
     }
 
     /**
@@ -110,9 +106,14 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        $user->load(['roles.permissions' => function ($query) {
-            $query->orderBy('id', 'asc');
-        }]);
+        $user->load([
+            'roles' => function ($query) {
+                $query->select(['id', 'name'])->orderBy('id', 'asc');
+            },
+            'roles.permissions' => function ($query) {
+                $query->select(['id', 'name'])->orderBy('id', 'asc');
+            },
+        ]);
 
         return Inertia::render('maintainers/users/Show', [
             'user' => $user,
@@ -124,9 +125,14 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        $user->load(['roles.permissions' => function ($query) {
-            $query->orderBy('id', 'asc');
-        }]);
+        $user->load([
+            'roles' => function ($query) {
+                $query->select(['id', 'name'])->orderBy('id', 'asc');
+            },
+            'roles.permissions' => function ($query) {
+                $query->select(['id', 'name'])->orderBy('id', 'asc');
+            },
+        ]);
         $roles = Role::select(['id', 'name'])->orderBy('id', 'asc')->get();
 
         return Inertia::render('maintainers/users/Edit', [
@@ -138,29 +144,20 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $user)
+    public function update(UpdateUserRequest $request, User $user)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'min:3', 'max:255', 'unique:users,name,'.$user->id],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
-            'password' => [
-                'required',
-                'string',
-                'min:12',
-                'max:128',
-                'regex:/^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^\w\s]).{12,128}$/',
-            ],
-            'roles' => ['array'],
-            'roles.*' => ['exists:roles,id'],
-        ], [
-            'password.regex' => 'La contraseña debe tener entre 12 y 128 caracteres, incluir letras, números y símbolos.',
-        ]);
+        $validated = $request->validated();
 
-        $user->update([
+        $data = [
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-        ]);
+        ];
+
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($validated['password']);
+        }
+
+        $user->update($data);
 
         if (isset($validated['roles'])) {
             $user->syncRoles($validated['roles']);
@@ -170,7 +167,7 @@ class UserController extends Controller
 
         return redirect()
             ->route('maintainers.users.edit', $user)
-            ->with('success', 'Usuario actualizado correctamente.');
+            ->with('success', 'User updated successfully.');
     }
 
     /**
@@ -180,7 +177,7 @@ class UserController extends Controller
     {
         $user->delete();
 
-        return back()->with('success', 'Usuario eliminado correctamente.');
+        return back()->with('success', 'User deleted successfully.');
     }
 
     /**
@@ -188,12 +185,17 @@ class UserController extends Controller
      */
     public function export()
     {
-        $app = config('app.name');
-        $time = Carbon::now('America/Santiago')->format('d-m-Y H-i-s');
+        $this->authorize('export', User::class);
+        try {
+            $app = config('app.name');
+            $tz = config('app.timezone', 'UTC');
+            $time = Carbon::now($tz)->format('d-m-Y H-i-s');
+            $filename = "{$app} - Users {$time}.xlsx";
 
-        $filename = "{$app} - Users {$time}.xlsx";
-
-        return Excel::download(new UsersExport, $filename);
+            return Excel::download(new UsersExport, $filename);
+        } catch (\Throwable $e) {
+            return back()->with('error', 'An error occurred while exporting.');
+        }
     }
 
     /**
@@ -209,6 +211,7 @@ class UserController extends Controller
      */
     public function import(Request $request)
     {
+        $this->authorize('import', User::class);
         $request->validate([
             'file' => 'required|file|mimes:xlsx|max:2048',
         ]);
@@ -219,7 +222,7 @@ class UserController extends Controller
             return redirect()
                 ->route('maintainers.users.import.form')
                 ->with('success', 'Users imported successfully.');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return back()->with('error', 'Error: '.$e->getMessage());
         }
     }

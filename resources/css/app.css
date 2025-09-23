@@ -166,10 +166,10 @@
 }
 
 /* Cursor pointer for pagination elements */
-[data-slot="pagination-item"],
-[data-slot="pagination-next"],
-[data-slot="pagination-previous"],
-[data-slot="pagination-first"],
-[data-slot="pagination-last"] {
+[data-slot='pagination-item'],
+[data-slot='pagination-next'],
+[data-slot='pagination-previous'],
+[data-slot='pagination-first'],
+[data-slot='pagination-last'] {
     cursor: pointer;
 }

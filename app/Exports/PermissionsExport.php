@@ -12,8 +12,7 @@ class PermissionsExport implements FromCollection, ShouldAutoSize, WithHeadings,
 {
     public function collection()
     {
-        return Permission::with('roles:id,name')
-            ->select('id', 'name', 'created_at', 'updated_at')
+        return Permission::select('id', 'name', 'created_at', 'updated_at')
             ->get();
     }
 
@@ -22,7 +21,6 @@ class PermissionsExport implements FromCollection, ShouldAutoSize, WithHeadings,
         return [
             'ID',
             'Name',
-            'Roles',
             'Created At',
             'Updated At',
         ];
@@ -33,7 +31,6 @@ class PermissionsExport implements FromCollection, ShouldAutoSize, WithHeadings,
         return [
             $permission->id,
             $permission->name,
-            $permission->roles->pluck('name')->implode(', '),
             $permission->created_at,
             $permission->updated_at,
         ];

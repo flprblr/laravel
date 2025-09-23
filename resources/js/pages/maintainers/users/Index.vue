@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -90,30 +90,20 @@ const onPageChange = (p: number) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head :title="breadcrumbs[0].title" />
 
-        <div class="p-4 space-y-3">
+        <div class="space-y-3 p-4">
             <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <HeadingSmall :title="breadcrumbs[0].title" :description="breadcrumbs[0].description" />
                 <div class="flex gap-2">
-                    <Button 
-                        variant="outline" 
-                        class="cursor-pointer"
-                        v-can="'users.create'"
-                        @click="router.visit(route('maintainers.users.create'))"
-                    >
+                    <Button variant="outline" class="cursor-pointer" v-can="'users.create'" @click="router.visit(route('maintainers.users.create'))">
                         <Plus class="mr-2 h-4 w-4" />
                         Create
                     </Button>
-                    <Button 
-                        variant="outline" 
-                        class="cursor-pointer"
-                        v-can="'users.export'"
-                        @click="downloadExport('users')"
-                    >
+                    <Button variant="outline" class="cursor-pointer" v-can="'users.export'" @click="downloadExport('users')">
                         <Download class="mr-2 h-4 w-4" />
                         Export
                     </Button>
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         class="cursor-pointer"
                         v-can="'users.import'"
                         @click="router.visit(route('maintainers.users.import.form'))"
@@ -143,9 +133,9 @@ const onPageChange = (p: number) => {
                         <TableCell>{{ u.updated_at }}</TableCell>
                         <TableCell v-role="'Administrator'" class="text-right">
                             <div class="flex items-center justify-end gap-3">
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
+                                <Button
+                                    variant="outline"
+                                    size="sm"
                                     class="cursor-pointer"
                                     v-can="'users.show'"
                                     @click="router.visit(route('maintainers.users.show', u.id))"
@@ -153,9 +143,9 @@ const onPageChange = (p: number) => {
                                     <Eye class="mr-1 h-4 w-4" />
                                     Show
                                 </Button>
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
+                                <Button
+                                    variant="outline"
+                                    size="sm"
                                     class="cursor-pointer"
                                     v-can="'users.edit'"
                                     @click="router.visit(route('maintainers.users.edit', u.id))"
@@ -165,12 +155,7 @@ const onPageChange = (p: number) => {
                                 </Button>
                                 <AlertDialog v-model:open="isDeleteDialogOpen" v-can="'users.destroy'">
                                     <AlertDialogTrigger as-child>
-                                        <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            class="cursor-pointer"
-                                            @click="openDeleteDialog(u.id)"
-                                        >
+                                        <Button variant="outline" size="sm" class="cursor-pointer" @click="openDeleteDialog(u.id)">
                                             <Trash2 class="mr-1 h-4 w-4" />
                                             Delete
                                         </Button>

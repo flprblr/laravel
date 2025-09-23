@@ -7,9 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Maintainers\Roles\StoreRoleRequest;
 use App\Http\Requests\Maintainers\Roles\UpdateRoleRequest;
 use App\Imports\RolesImport;
-use App\Models\User;
-use App\Models\Role;
 use App\Models\Permission;
+use App\Models\Role;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -17,6 +16,11 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class RoleController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Role::class, 'role');
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -24,25 +28,30 @@ class RoleController extends Controller
     {
         $allowedSortColumns = ['id', 'name', 'created_at', 'updated_at'];
         $allowedSortDirections = ['asc', 'desc'];
+        $defaultPerPage = 15;
+        $maxPerPage = 100;
 
-        $sortBy = $request->input('sort_by', 'name');
-        if (! in_array($sortBy, $allowedSortColumns)) {
-            $sortBy = 'name';
+        $sortBy = $request->input('sort_by', 'id');
+        if (! in_array($sortBy, $allowedSortColumns, true)) {
+            $sortBy = 'id';
         }
 
-        $sortDirection = $request->input('sort_direction', 'asc');
-        if (! in_array($sortDirection, $allowedSortDirections)) {
+        $sortDirection = strtolower($request->input('sort_direction', 'asc'));
+        if (! in_array($sortDirection, $allowedSortDirections, true)) {
             $sortDirection = 'asc';
         }
 
-        $perPage = $request->input('per_page', 15);
+        $perPage = (int) $request->input('per_page', $defaultPerPage);
+        $perPage = $perPage > 0 ? min($perPage, $maxPerPage) : $defaultPerPage;
 
         $query = Role::select(['id', 'name', 'created_at', 'updated_at']);
 
-        if ($search = $request->input('search')) {
+        if ($search = trim((string) $request->input('search'))) {
             $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('id', $search);
+                $q->where('name', 'like', "%{$search}%");
+                if (is_numeric($search)) {
+                    $q->orWhere('id', (int) $search);
+                }
             });
         }
 
@@ -71,13 +80,9 @@ class RoleController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreRoleRequest $request)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'min:3', 'max:255', 'unique:roles,name'],
-            'permissions' => ['array'],
-            'permissions.*' => ['exists:permissions,id'],
-        ]);
+        $validated = $request->validated();
 
         $role = Role::create([
             'name' => $validated['name'],
@@ -90,7 +95,7 @@ class RoleController extends Controller
 
         return redirect()
             ->route('maintainers.roles.create')
-            ->with('success', 'Rol creado correctamente.');
+            ->with('success', 'Role created successfully.');
     }
 
     /**
@@ -99,7 +104,7 @@ class RoleController extends Controller
     public function show(Role $role)
     {
         $role->load(['permissions' => function ($query) {
-            $query->orderBy('id', 'asc');
+            $query->select(['id', 'name'])->orderBy('id', 'asc');
         }]);
 
         return Inertia::render('maintainers/roles/Show', [
@@ -112,7 +117,9 @@ class RoleController extends Controller
      */
     public function edit(Role $role)
     {
-        $role->load('permissions');
+        $role->load(['permissions' => function ($query) {
+            $query->select(['id', 'name'])->orderBy('id', 'asc');
+        }]);
         $permissions = Permission::select(['id', 'name'])->orderBy('id', 'asc')->get();
 
         return Inertia::render('maintainers/roles/Edit', [
@@ -124,13 +131,9 @@ class RoleController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Role $role)
+    public function update(UpdateRoleRequest $request, Role $role)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'min:3', 'max:255', 'unique:roles,name,'.$role->id],
-            'permissions' => ['array'],
-            'permissions.*' => ['exists:permissions,id'],
-        ]);
+        $validated = $request->validated();
 
         $role->update([
             'name' => $validated['name'],
@@ -144,7 +147,7 @@ class RoleController extends Controller
 
         return redirect()
             ->route('maintainers.roles.edit', $role)
-            ->with('success', 'Rol actualizado correctamente.');
+            ->with('success', 'Role updated successfully.');
     }
 
     /**
@@ -154,7 +157,7 @@ class RoleController extends Controller
     {
         $role->delete();
 
-        return back()->with('success', 'Rol eliminado correctamente.');
+        return back()->with('success', 'Role deleted successfully.');
     }
 
     /**
@@ -162,12 +165,17 @@ class RoleController extends Controller
      */
     public function export()
     {
-        $app = config('app.name');
-        $time = Carbon::now('America/Santiago')->format('d-m-Y H-i-s');
+        $this->authorize('export', Role::class);
+        try {
+            $app = config('app.name');
+            $tz = config('app.timezone', 'UTC');
+            $time = Carbon::now($tz)->format('d-m-Y H-i-s');
+            $filename = "{$app} - Roles {$time}.xlsx";
 
-        $filename = "{$app} - Roles {$time}.xlsx";
-
-        return Excel::download(new RolesExport, $filename);
+            return Excel::download(new RolesExport, $filename);
+        } catch (\Throwable $e) {
+            return back()->with('error', 'An error occurred while exporting.');
+        }
     }
 
     /**
@@ -183,6 +191,7 @@ class RoleController extends Controller
      */
     public function import(Request $request)
     {
+        $this->authorize('import', Role::class);
         $request->validate([
             'file' => 'required|file|mimes:xlsx|max:2048',
         ]);
@@ -193,7 +202,7 @@ class RoleController extends Controller
             return redirect()
                 ->route('maintainers.roles.import.form')
                 ->with('success', 'Roles imported successfully.');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return back()->with('error', 'Error: '.$e->getMessage());
         }
     }

@@ -30,7 +30,7 @@ const getCurrentIcon = () => {
 <template>
     <DropdownMenu>
         <DropdownMenuTrigger as-child>
-            <Button variant="ghost" size="icon" class="transition-colors cursor-pointer">
+            <Button variant="ghost" size="icon" class="cursor-pointer transition-colors">
                 <component :is="getCurrentIcon()" class="h-5 w-5" />
             </Button>
         </DropdownMenuTrigger>

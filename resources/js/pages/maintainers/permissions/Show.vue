@@ -41,7 +41,7 @@ const form = useForm({
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head :title="breadcrumbs[0].title" />
 
-        <div class="max-w-xl p-4 space-y-3">
+        <div class="max-w-xl space-y-3 p-4">
             <HeadingSmall :title="breadcrumbs[0].title" :description="breadcrumbs[0].description" />
 
             <form class="space-y-6">
@@ -69,7 +69,9 @@ const form = useForm({
                     <Label>Roles with: {{ props.permission.name }}</Label>
                     <div class="flex flex-wrap gap-2">
                         <div class="flex flex-wrap gap-2">
-                            <Button size="sm" v-for="role in props.permission.roles" :key="role.id" variant="outline" class="cursor-pointer"> {{ role.name }} </Button>
+                            <Button size="sm" v-for="role in props.permission.roles" :key="role.id" variant="outline" class="cursor-pointer">
+                                {{ role.name }}
+                            </Button>
                         </div>
                     </div>
                 </div>

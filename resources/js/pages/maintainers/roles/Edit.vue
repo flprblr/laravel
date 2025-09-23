@@ -77,7 +77,7 @@ useFlashWatcher();
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head :title="breadcrumbs[0].title" />
 
-        <div class="max-w-xl p-4 space-y-3">
+        <div class="max-w-xl space-y-3 p-4">
             <HeadingSmall :title="breadcrumbs[0].title" :description="breadcrumbs[0].description" />
 
             <form @submit.prevent="submit" class="space-y-6">

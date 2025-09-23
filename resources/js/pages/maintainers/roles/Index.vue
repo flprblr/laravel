@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -90,30 +90,20 @@ const onPageChange = (p: number) => {
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head :title="breadcrumbs[0].title" />
 
-        <div class="p-4 space-y-3">
+        <div class="space-y-3 p-4">
             <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <HeadingSmall :title="breadcrumbs[0].title" :description="breadcrumbs[0].description" />
                 <div class="flex gap-2">
-                    <Button 
-                        variant="outline" 
-                        class="cursor-pointer"
-                        v-can="'roles.create'"
-                        @click="router.visit(route('maintainers.roles.create'))"
-                    >
+                    <Button variant="outline" class="cursor-pointer" v-can="'roles.create'" @click="router.visit(route('maintainers.roles.create'))">
                         <Plus class="mr-2 h-4 w-4" />
                         Create
                     </Button>
-                    <Button 
-                        variant="outline" 
-                        class="cursor-pointer"
-                        v-can="'roles.export'"
-                        @click="downloadExport('roles')"
-                    >
+                    <Button variant="outline" class="cursor-pointer" v-can="'roles.export'" @click="downloadExport('roles')">
                         <Download class="mr-2 h-4 w-4" />
                         Export
                     </Button>
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         class="cursor-pointer"
                         v-can="'roles.import'"
                         @click="router.visit(route('maintainers.roles.import.form'))"
@@ -141,9 +131,9 @@ const onPageChange = (p: number) => {
                         <TableCell>{{ r.updated_at }}</TableCell>
                         <TableCell v-role="'Administrator'" class="text-right">
                             <div class="flex items-center justify-end gap-3">
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
+                                <Button
+                                    variant="outline"
+                                    size="sm"
                                     class="cursor-pointer"
                                     v-can="'roles.show'"
                                     @click="router.visit(route('maintainers.roles.show', r.id))"
@@ -151,9 +141,9 @@ const onPageChange = (p: number) => {
                                     <Eye class="mr-1 h-4 w-4" />
                                     Show
                                 </Button>
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
+                                <Button
+                                    variant="outline"
+                                    size="sm"
                                     class="cursor-pointer"
                                     v-can="'roles.edit'"
                                     @click="router.visit(route('maintainers.roles.edit', r.id))"
@@ -163,12 +153,7 @@ const onPageChange = (p: number) => {
                                 </Button>
                                 <AlertDialog v-model:open="isDeleteDialogOpen" v-can="'roles.destroy'">
                                     <AlertDialogTrigger as-child>
-                                        <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            class="cursor-pointer"
-                                            @click="openDeleteDialog(r.id)"
-                                        >
+                                        <Button variant="outline" size="sm" class="cursor-pointer" @click="openDeleteDialog(r.id)">
                                             <Trash2 class="mr-1 h-4 w-4" />
                                             Delete
                                         </Button>

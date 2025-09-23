@@ -44,7 +44,7 @@ const form = useForm({
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head :title="breadcrumbs[0].title" />
 
-        <div class="max-w-xl p-4 space-y-3">
+        <div class="max-w-xl space-y-3 p-4">
             <HeadingSmall :title="breadcrumbs[0].title" :description="breadcrumbs[0].description" />
 
             <form class="space-y-6">
@@ -77,11 +77,7 @@ const form = useForm({
                     <Label>Roles</Label>
                     <div class="grid grid-cols-1 gap-3 rounded-lg border p-4 md:grid-cols-2 lg:grid-cols-3">
                         <div v-for="role in props.user.roles" :key="role.id" class="flex items-center space-x-2">
-                            <Checkbox
-                                :id="`role-${role.id}`"
-                                :model-value="true"
-                                disabled
-                            />
+                            <Checkbox :id="`role-${role.id}`" :model-value="true" disabled />
                             <Label :for="`role-${role.id}`" class="text-sm font-normal">
                                 {{ role.name }}
                             </Label>

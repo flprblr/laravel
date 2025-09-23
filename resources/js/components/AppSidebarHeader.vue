@@ -25,6 +25,6 @@ withDefaults(
                 <!-- <AppearanceTabs /> -->
             </template>
         </div>
-        <AppearanceButton  />
+        <AppearanceButton />
     </header>
 </template>
