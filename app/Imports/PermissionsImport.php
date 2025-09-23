@@ -22,25 +22,16 @@ class PermissionsImport implements SkipsEmptyRows, ToCollection, WithHeadingRow,
 
     public function collection(Collection $rows)
     {
-        DB::beginTransaction();
-
-        try {
+        DB::transaction(function () use ($rows) {
             foreach ($rows as $row) {
                 Permission::updateOrCreate(
-                    [
-                        'id' => $row['id'],
-                    ],
+                    ['id' => $row['id']],
                     [
                         'name' => strtolower(trim($row['name'])),
                         'guard_name' => 'web',
                     ]
                 );
             }
-
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        });
     }
 }

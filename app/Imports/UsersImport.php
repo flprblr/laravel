@@ -35,23 +35,19 @@ class UsersImport implements SkipsEmptyRows, ToCollection, WithHeadingRow, WithV
     {
         DB::transaction(function () use ($rows) {
             foreach ($rows as $row) {
-                $unique = ! empty($row['id'])
-                    ? ['id' => $row['id']]
-                    : ['email' => strtolower(trim($row['email']))];
-
-                $data = [
-                    'name' => trim($row['name']),
-                    'email' => strtolower(trim($row['email'])),
-                    'status' => $this->normalizeStatus($row['status'] ?? null),
-                    'dni' => $row['dni'] ?? null,
-                    'phone' => $row['phone'] ?? null,
-                ];
-
-                if (! empty($row['password'])) {
-                    $data['password'] = $row['password'];
-                }
-
-                User::updateOrCreate($unique, $data);
+                User::updateOrCreate(
+                    ! empty($row['id'])
+                        ? ['id' => $row['id']]
+                        : ['email' => strtolower(trim($row['email']))],
+                    array_filter([
+                        'name' => trim($row['name']),
+                        'email' => strtolower(trim($row['email'])),
+                        'status' => $this->normalizeStatus($row['status'] ?? null),
+                        'dni' => $row['dni'] ?? null,
+                        'phone' => $row['phone'] ?? null,
+                        'password' => $row['password'] ?? null,
+                    ], fn ($v) => $v !== null)
+                );
             }
         });
     }
