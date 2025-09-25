@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { useForm } from 'laravel-precognition-vue-inertia';
-import { toRaw } from 'vue';
 
 import { type BreadcrumbItem } from '@/types';
 
@@ -106,8 +105,8 @@ useFlashWatcher();
                         <div v-for="permission in props.permissions" :key="permission.id" class="flex items-center space-x-2">
                             <Checkbox
                                 :id="`permission-${permission.id}`"
-                                :model-value="toRaw(form.permissions).includes(Number(permission.id))"
-                                @update:model-value="togglePermission(permission.id)"
+                                :model-value="form.permissions.includes(Number(permission.id))"
+                                @update:modelValue="togglePermission(permission.id)"
                             />
                             <Label :for="`permission-${permission.id}`" class="text-sm font-normal">
                                 {{ permission.name }}

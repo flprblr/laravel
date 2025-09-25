@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
 import { useForm } from 'laravel-precognition-vue-inertia';
-import { toRaw } from 'vue';
 
 import { type BreadcrumbItem } from '@/types';
 
@@ -119,8 +118,8 @@ useFlashWatcher();
                         <div v-for="role in props.roles" :key="role.id" class="flex items-center space-x-2">
                             <Checkbox
                                 :id="`role-${role.id}`"
-                                :model-value="toRaw(form.roles).includes(Number(role.id))"
-                                @update:model-value="toggleRole(role.id)"
+                                :model-value="form.roles.includes(Number(role.id))"
+                                @update:modelValue="toggleRole(role.id)"
                             />
                             <Label :for="`role-${role.id}`" class="text-sm font-normal">
                                 {{ role.name }}

@@ -20,6 +20,7 @@ const props = defineProps<{
         updated_at: string | null;
         permissions?: Array<{ id: number | string; name: string }>;
     };
+    permissions: Array<{ id: number | string; name: string }>;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -66,11 +67,15 @@ const form = useForm({
                     <Input id="updated_at" v-model="form.updated_at" type="text" class="mt-1 block w-full" readonly disabled />
                 </div>
 
-                <div class="grid gap-2" v-if="props.role.permissions && props.role.permissions.length">
+                <div class="grid gap-2">
                     <Label>Permissions</Label>
                     <div class="grid grid-cols-1 gap-3 rounded-lg border p-4 md:grid-cols-2 lg:grid-cols-3">
-                        <div v-for="permission in props.role.permissions" :key="permission.id" class="flex items-center space-x-2">
-                            <Checkbox :id="`permission-${permission.id}`" :model-value="true" disabled />
+                        <div v-for="permission in props.permissions" :key="permission.id" class="flex items-center space-x-2">
+                            <Checkbox
+                                :id="`permission-${permission.id}`"
+                                :model-value="props.role.permissions?.some((p) => Number(p.id) === Number(permission.id))"
+                                disabled
+                            />
                             <Label :for="`permission-${permission.id}`" class="text-sm font-normal">
                                 {{ permission.name }}
                             </Label>

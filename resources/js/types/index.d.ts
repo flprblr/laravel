@@ -1,4 +1,5 @@
 import type { LucideIcon } from 'lucide-vue-next';
+import type { Component } from 'vue';
 import type { Config } from 'ziggy-js';
 
 export interface Auth {
@@ -42,3 +43,22 @@ export interface User {
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
+
+// Generic table types
+export type TableColumn<Row = Record<string, unknown>> = {
+    label: string;
+    field: keyof Row | string;
+    class?: string;
+    formatter?: (value: unknown, row: Row) => unknown;
+};
+
+export type RowAction<Row = Record<string, unknown>> = {
+    key: 'show' | 'edit' | 'delete' | string;
+    label: string;
+    can?: string;
+    type: 'route' | 'emit';
+    route?: string;
+    paramFrom?: keyof Row | string;
+    icon?: Component;
+    confirm?: { title: string; description: string };
+};

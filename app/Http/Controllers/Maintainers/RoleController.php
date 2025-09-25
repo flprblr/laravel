@@ -107,8 +107,11 @@ class RoleController extends Controller
             $query->select(['id', 'name'])->orderBy('id', 'asc');
         }]);
 
+        $allPermissions = Permission::select(['id', 'name'])->orderBy('id', 'asc')->get();
+
         return Inertia::render('maintainers/roles/Show', [
             'role' => $role,
+            'permissions' => $allPermissions,
         ]);
     }
 

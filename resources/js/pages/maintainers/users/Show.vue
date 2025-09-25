@@ -21,6 +21,7 @@ const props = defineProps<{
         updated_at: string | null;
         roles?: Array<{ id: number | string; name: string }>;
     };
+    roles: Array<{ id: number | string; name: string }>;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -73,11 +74,15 @@ const form = useForm({
                     <Input id="updated_at" v-model="form.updated_at" type="text" class="mt-1 block w-full" readonly disabled />
                 </div>
 
-                <div class="grid gap-2" v-if="props.user.roles && props.user.roles.length">
+                <div class="grid gap-2">
                     <Label>Roles</Label>
                     <div class="grid grid-cols-1 gap-3 rounded-lg border p-4 md:grid-cols-2 lg:grid-cols-3">
-                        <div v-for="role in props.user.roles" :key="role.id" class="flex items-center space-x-2">
-                            <Checkbox :id="`role-${role.id}`" :model-value="true" disabled />
+                        <div v-for="role in props.roles" :key="role.id" class="flex items-center space-x-2">
+                            <Checkbox
+                                :id="`role-${role.id}`"
+                                :model-value="props.user.roles?.some((r) => Number(r.id) === Number(role.id))"
+                                disabled
+                            />
                             <Label :for="`role-${role.id}`" class="text-sm font-normal">
                                 {{ role.name }}
                             </Label>

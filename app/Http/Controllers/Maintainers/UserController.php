@@ -115,8 +115,11 @@ class UserController extends Controller
             },
         ]);
 
+        $allRoles = Role::select(['id', 'name'])->orderBy('id', 'asc')->get();
+
         return Inertia::render('maintainers/users/Show', [
             'user' => $user,
+            'roles' => $allRoles,
         ]);
     }
 
