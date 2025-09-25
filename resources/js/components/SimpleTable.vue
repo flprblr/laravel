@@ -28,6 +28,7 @@ const props = withDefaults(
         actionsLabel?: string;
         showActions?: boolean;
         rowActions?: RowAction[];
+        indexRoute?: string; // e.g. 'maintainers.users.index'
     }>(),
     {
         itemsPerPage: 10,
@@ -51,14 +52,15 @@ const getCellValue = (item: any, field: string | number | symbol) => {
 };
 
 const handleActionClick = (action: RowAction, item: any) => {
-    if (action.type === 'route' && action.route) {
-        const param = action.paramFrom ? (item as any)[action.paramFrom as any] : (item as any)[props.rowKey as any];
-        router.visit(route(action.route as any, param));
-        return;
-    }
     if (action.confirm) {
         pendingAction.value = { action, item };
         isConfirmOpen.value = true;
+        return;
+    }
+    if (action.type === 'route' && action.route) {
+        const param = action.paramFrom ? (item as any)[action.paramFrom as any] : (item as any)[props.rowKey as any];
+        const method = action.method ?? 'get';
+        router.visit(route(action.route as any, param), { method });
         return;
     }
     emit('row:action', { key: action.key, id: (item as any)[props.rowKey as any], item });
@@ -67,7 +69,14 @@ const handleActionClick = (action: RowAction, item: any) => {
 const confirmAction = () => {
     if (pendingAction.value) {
         const { action, item } = pendingAction.value;
-        emit('row:action', { key: action.key, id: (item as any)[props.rowKey as any], item });
+        const id = (item as any)[props.rowKey as any];
+        if (action.type === 'route' && action.route) {
+            const param = action.paramFrom ? (item as any)[action.paramFrom as any] : id;
+            const method = action.method ?? 'get';
+            router.visit(route(action.route as any, param), { method });
+        } else {
+            emit('row:action', { key: action.key, id, item });
+        }
     }
     isConfirmOpen.value = false;
     pendingAction.value = null;
@@ -127,7 +136,15 @@ defineSlots<{
             :items-per-page="props.itemsPerPage"
             :total="props.total"
             :default-page="props.currentPage"
-            @update:page="(p) => emit('update:page', p)"
+            @update:page="
+                (p) => {
+                    if (props.indexRoute) {
+                        router.get(route(props.indexRoute as any), { page: p }, { preserveScroll: true, preserveState: true, replace: true });
+                    } else {
+                        emit('update:page', p);
+                    }
+                }
+            "
         >
             <PaginationContent v-slot="{ items }">
                 <PaginationPrevious />

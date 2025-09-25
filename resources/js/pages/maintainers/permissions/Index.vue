@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 
 import AppLayout from '@/layouts/AppLayout.vue';
 
@@ -21,8 +21,6 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const ROUTE_BASE = 'maintainers.permissions' as const;
-
 const columns: TableColumn[] = [
     { label: 'ID', field: 'id' },
     { label: 'Name', field: 'name' },
@@ -40,35 +38,19 @@ const rowActions: RowAction[] = [
         label: 'Delete',
         icon: Trash2,
         can: 'permissions.destroy',
-        type: 'emit',
+        type: 'route',
+        route: 'maintainers.permissions.destroy',
+        paramFrom: 'id',
+        method: 'delete',
         confirm: { title: '¿Estás seguro?', description: 'Esto eliminará permanentemente el permiso seleccionado.' },
     },
 ];
-
-const onPageChange = (p: number) => {
-    if (p === (props.permissions?.current_page ?? 1)) return;
-    router.get(
-        route('maintainers.permissions.index'),
-        { page: p },
-        {
-            preserveScroll: true,
-            preserveState: true,
-            replace: true,
-        },
-    );
-};
-
-const onRowAction = ({ key, id }: { key: string; id: string | number }) => {
-    if (key === 'delete') {
-        router.visit(route(`${ROUTE_BASE}.destroy`, id), { method: 'delete', preserveScroll: true });
-    }
-};
 </script>
 
 <template>
     <AppLayout :breadcrumbs="breadcrumbs">
         <Head :title="breadcrumbs[0].title" />
-        <div class="p-4 space-y-3">
+        <div class="space-y-3 p-4">
             <HeaderTable :title="breadcrumbs[0].title" :description="breadcrumbs[0].description" :actions="headerActions" resource="permissions" />
             <SimpleTable
                 :columns="columns"
@@ -76,11 +58,10 @@ const onRowAction = ({ key, id }: { key: string; id: string | number }) => {
                 :items-per-page="props.permissions.per_page || 10"
                 :total="props.permissions.total || 0"
                 :current-page="props.permissions.current_page || 1"
+                index-route="maintainers.permissions.index"
                 row-key="id"
                 actions-label="Action"
                 :row-actions="rowActions"
-                @update:page="onPageChange"
-                @row:action="onRowAction"
             />
         </div>
     </AppLayout>

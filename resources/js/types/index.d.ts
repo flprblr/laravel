@@ -61,4 +61,5 @@ export type RowAction<Row = Record<string, unknown>> = {
     paramFrom?: keyof Row | string;
     icon?: Component;
     confirm?: { title: string; description: string };
+    method?: 'get' | 'post' | 'put' | 'patch' | 'delete';
 };

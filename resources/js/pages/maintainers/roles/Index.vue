@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 
 import AppLayout from '@/layouts/AppLayout.vue';
 
@@ -21,8 +21,6 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-const ROUTE_BASE = 'maintainers.roles' as const;
-
 const columns: TableColumn[] = [
     { label: 'ID', field: 'id' },
     { label: 'Name', field: 'name' },
@@ -40,29 +38,13 @@ const rowActions: RowAction[] = [
         label: 'Delete',
         icon: Trash2,
         can: 'roles.destroy',
-        type: 'emit',
+        type: 'route',
+        route: 'maintainers.roles.destroy',
+        paramFrom: 'id',
+        method: 'delete',
         confirm: { title: '¿Estás seguro?', description: 'Esto eliminará permanentemente el rol seleccionado.' },
     },
 ];
-
-const onPageChange = (p: number) => {
-    if (p === (props.roles?.current_page ?? 1)) return;
-    router.get(
-        route('maintainers.roles.index'),
-        { page: p },
-        {
-            preserveScroll: true,
-            preserveState: true,
-            replace: true,
-        },
-    );
-};
-
-const onRowAction = ({ key, id }: { key: string; id: string | number }) => {
-    if (key === 'delete') {
-        router.visit(route(`${ROUTE_BASE}.destroy`, id), { method: 'delete', preserveScroll: true });
-    }
-};
 </script>
 
 <template>
@@ -76,11 +58,10 @@ const onRowAction = ({ key, id }: { key: string; id: string | number }) => {
                 :items-per-page="props.roles.per_page || 10"
                 :total="props.roles.total || 0"
                 :current-page="props.roles.current_page || 1"
+                index-route="maintainers.roles.index"
                 row-key="id"
                 actions-label="Action"
                 :row-actions="rowActions"
-                @update:page="onPageChange"
-                @row:action="onRowAction"
             />
         </div>
     </AppLayout>
