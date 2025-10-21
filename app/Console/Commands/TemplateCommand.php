@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Helpers\CommandHelper;
 use Illuminate\Console\Command;
 
 class TemplateCommand extends Command
@@ -11,7 +12,7 @@ class TemplateCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:template-command';
+    protected $signature = 'template:command';
 
     /**
      * The console command description.
@@ -25,6 +26,19 @@ class TemplateCommand extends Command
      */
     public function handle()
     {
-        //
+        // CommandHelper::setLogChannel('single');
+        CommandHelper::start($this);
+
+        try {
+
+            CommandHelper::progress($this, 'Procesing...');
+            // CommandHelper::consoleProgress($this, 'Console Only');
+            // CommandHelper::logProgress($this, 'Log Only');
+
+            return CommandHelper::success($this);
+        } catch (\Exception $e) {
+            return CommandHelper::failure($this);
+        }
+
     }
 }
