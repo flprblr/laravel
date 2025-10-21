@@ -6,7 +6,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { usePermissions } from '@/composables/usePermissions';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { Clock, RefreshCcw, UserRound, UserRoundCheck, UserRoundCog } from 'lucide-vue-next';
+import { Link2, UserRound, UserRoundCheck, UserRoundCog } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const { can, is } = usePermissions();
@@ -14,24 +14,9 @@ const { can, is } = usePermissions();
 // Ejemplo usando el composable usePermissions
 const mainNavItems: NavItem[] = [
     {
-        title: 'Pedidos Pendientes',
-        href: '/pending-orders',
-        icon: Clock,
-    },
-    {
-        title: 'Actualizar Pedidos SM',
-        href: '/sm/update-orders-status',
-        icon: RefreshCcw,
-    },
-    {
-        title: 'Actualizar Pedidos Superga',
-        href: '/superga/update-orders-status',
-        icon: RefreshCcw,
-    },
-    {
-        title: 'Actualizar Pedidos Kappa',
-        href: '/kappa/update-orders-status',
-        icon: RefreshCcw,
+        title: 'Link',
+        href: '/dashboard',
+        icon: Link2,
     },
 ];
 
